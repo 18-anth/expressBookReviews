@@ -1,5 +1,4 @@
 const express = require('express');
-const axios = require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -79,53 +78,84 @@ public_users.get('/review/:isbn', function (req, res) {
   }
 });
 
-// Task 10: Get the book list using async-await with Axios
-public_users.get('/async/books', async (req, res) => {
-  try {
-    const response = await axios.get('http://localhost:5001/');
-    return res.status(200).json(response.data);
-  } catch (error) {
-    return res.status(500).json({ message: "Error fetching books", error: error.message });
-  }
+// Task 10: Get the book list using Promise callbacks
+public_users.get('/async/books', function (req, res) {
+  new Promise((resolve, reject) => {
+    resolve(books);
+  })
+    .then((allBooks) => {
+      return res.status(200).json(allBooks);
+    })
+    .catch((error) => {
+      return res.status(500).json({ message: "Error fetching books", error: error.message });
+    });
 });
 
-// Task 11: Get book details based on ISBN using async-await with Axios
-public_users.get('/async/isbn/:isbn', async (req, res) => {
-  try {
-    const isbn = req.params.isbn;
-    const response = await axios.get(`http://localhost:5001/isbn/${isbn}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    const status = error.response ? error.response.status : 500;
-    const message = error.response ? error.response.data : { message: error.message };
-    return res.status(status).json(message);
-  }
+// Task 11: Get book details based on ISBN using Promise callbacks
+public_users.get('/async/isbn/:isbn', function (req, res) {
+  const isbn = req.params.isbn;
+  new Promise((resolve, reject) => {
+    const book = books[isbn];
+    if (book) {
+      resolve(book);
+    } else {
+      reject({ status: 404, message: "Book not found" });
+    }
+  })
+    .then((book) => {
+      return res.status(200).json(book);
+    })
+    .catch((error) => {
+      return res.status(error.status || 500).json({ message: error.message });
+    });
 });
 
-// Task 12: Get book details based on Author using async-await with Axios
-public_users.get('/async/author/:author', async (req, res) => {
-  try {
-    const author = req.params.author;
-    const response = await axios.get(`http://localhost:5001/author/${encodeURIComponent(author)}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    const status = error.response ? error.response.status : 500;
-    const message = error.response ? error.response.data : { message: error.message };
-    return res.status(status).json(message);
-  }
+// Task 12: Get book details based on Author using Promise callbacks
+public_users.get('/async/author/:author', function (req, res) {
+  const author = req.params.author;
+  new Promise((resolve, reject) => {
+    const matchingBooks = {};
+    Object.keys(books).forEach((key) => {
+      if (books[key].author === author) {
+        matchingBooks[key] = books[key];
+      }
+    });
+    if (Object.keys(matchingBooks).length > 0) {
+      resolve(matchingBooks);
+    } else {
+      reject({ status: 404, message: "No books found for this author" });
+    }
+  })
+    .then((matchingBooks) => {
+      return res.status(200).json(matchingBooks);
+    })
+    .catch((error) => {
+      return res.status(error.status || 500).json({ message: error.message });
+    });
 });
 
-// Task 13: Get book details based on Title using async-await with Axios
-public_users.get('/async/title/:title', async (req, res) => {
-  try {
-    const title = req.params.title;
-    const response = await axios.get(`http://localhost:5001/title/${encodeURIComponent(title)}`);
-    return res.status(200).json(response.data);
-  } catch (error) {
-    const status = error.response ? error.response.status : 500;
-    const message = error.response ? error.response.data : { message: error.message };
-    return res.status(status).json(message);
-  }
+// Task 13: Get book details based on Title using Promise callbacks
+public_users.get('/async/title/:title', function (req, res) {
+  const title = req.params.title;
+  new Promise((resolve, reject) => {
+    const matchingBooks = {};
+    Object.keys(books).forEach((key) => {
+      if (books[key].title === title) {
+        matchingBooks[key] = books[key];
+      }
+    });
+    if (Object.keys(matchingBooks).length > 0) {
+      resolve(matchingBooks);
+    } else {
+      reject({ status: 404, message: "No books found for this title" });
+    }
+  })
+    .then((matchingBooks) => {
+      return res.status(200).json(matchingBooks);
+    })
+    .catch((error) => {
+      return res.status(error.status || 500).json({ message: error.message });
+    });
 });
 
 module.exports.general = public_users;
