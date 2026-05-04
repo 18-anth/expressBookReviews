@@ -1,0 +1,9 @@
+Task 9 - Delete a Book Review
+==============================
+
+cURL Command:
+curl -s -b /tmp/cookies.txt -c /tmp/cookies.txt -X DELETE \
+  "http://localhost:5001/customer/auth/review/1"
+
+Output:
+{"message":"Review for ISBN 1 deleted successfully"}

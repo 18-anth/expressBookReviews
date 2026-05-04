@@ -1,0 +1,9 @@
+Task 8 - Add or Modify a Book Review
+======================================
+
+cURL Command:
+curl -s -b /tmp/cookies.txt -c /tmp/cookies.txt -X PUT \
+  "http://localhost:5001/customer/auth/review/1?review=Great+book+highly+recommended"
+
+Output:
+{"message":"Review for ISBN 1 posted/updated successfully","reviews":{"testuser":"Great book highly recommended"}}
